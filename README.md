@@ -1,5 +1,5 @@
 # Purpose
-This project is created for the recruitment process of Extended Web AppTech for the position of React Native Developer.
+This project is created for the recruitment process of KUDOSTA SOLUTIONS LLP for the position of React Native Developer.
 
 ## About Project
 It's a shift management  app where in we can fetch the list of available shifts using the API provided and then book and cancel the shifts accordingly. 
