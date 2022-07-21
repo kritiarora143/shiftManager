@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { ActivityIndicator, SafeAreaView, SectionList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, SafeAreaView, SectionList, StyleSheet, Text, TouchableOpacity, View, Alert } from "react-native";
 import SegmentedControlTab from "react-native-segmented-control-tab";
 import { DataContext } from '../contexts';
 import { bookShift, cancelShift } from '../util/apiHelpers';
@@ -13,7 +13,6 @@ const AvailableShifts = () => {
   const [data, setData] = useState([])
 
   const handleIndexChange = (index) => {
-    console.log(index)
     setSelectedIndex(index)
     setData(Object.values(segmentedData)[index])
   };
@@ -45,6 +44,7 @@ const AvailableShifts = () => {
         setShifts(newData)
       })
       .catch(e => {
+        Alert.alert("Alert!!", e.response.data.message)
         let newData = data.map(item => {
           if (item.id == id) {
             let newItem = item
@@ -75,6 +75,7 @@ const AvailableShifts = () => {
         setShifts(newData)
       })
       .catch(e => {
+        Alert.alert("Alert!!", e.response.data.message)
         let newData = data.map(item => {
           if (item.id == id) {
             let newItem = item
@@ -95,10 +96,12 @@ const AvailableShifts = () => {
     let overlapping = false
     shifts.filter(shift => shift.booked).forEach(shift => {
       if ((shift.startTime <= item.startTime && shift.endTime >= item.startTime) ||
-        (shift.startTime <= item.endTime && shift.endTime >= item.endTime)) {
+        (shift.startTime <= item.endTime && shift.endTime >= item.endTime) ||
+        (shift.startTime >= item.startTime && shift.endTime <= item.endTime)) {
         overlapping = true
       }
     })
+    let disabled = item.startTime < new Date().getTime() || overlapping && !item.booked
     return (
       <View style={styles.renderItem}>
         <Text style={styles.title}>{`${formatTime(item.startTime)}-${formatTime(item.endTime)}`}</Text>
@@ -106,11 +109,11 @@ const AvailableShifts = () => {
           {item.booked ? 'Booked' : overlapping && 'Overlapping'}</Text>}
 
         <TouchableOpacity
-          style={[styles.cancelButton, { borderColor: item.booked == "loading" ? "#16A64D" : item.booked ? '#E2006A' : overlapping ? '#CBD2E1' : '#16A64D' },
+          style={[styles.cancelButton, { borderColor: item.booked == "loading" ? "#16A64D" : disabled ? '#CBD2E1' : item.booked ? '#E2006A' : '#16A64D' },
 
           ]}
           onPress={() => { !item.booked ? onPressBookShift(item.id) : onPressCancelShift(item.id) }}
-          disabled={overlapping && !item.booked} // overlapping
+          disabled={disabled} // overlapping
         >
           <View
             style={{
@@ -120,7 +123,7 @@ const AvailableShifts = () => {
             {item.booked == "loading" ?
               <ActivityIndicator style={{ alignSelf: 'center' }} size="small" color="#16A64D" />
               :
-              <Text style={{ color: item.booked ? '#E2006A' : overlapping ? '#CBD2E1' : '#16A64D' }}>
+              <Text style={{ color: disabled ? '#CBD2E1' :  item.booked ? '#E2006A' :'#16A64D' }}>
                 {!item.booked ? "Book" : "Cancel"}
               </Text>}
           </View>

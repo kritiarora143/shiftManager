@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { SafeAreaView, SectionList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView, SectionList, StyleSheet, Text, TouchableOpacity, ActivityIndicator, View,Alert } from "react-native";
 import { DataContext } from '../contexts';
 import { cancelShift, getShifts } from '../util/apiHelpers';
 import { addFormattedDate, formatTime, getTimeDeltaHrs, groupBy } from '../util/commonHelpers';
@@ -16,7 +16,7 @@ const MyShifts = () => {
     const callApi = () => {
         getShifts()
             .then(resp => setShifts(resp.data))
-            .catch(e => console.log(e))
+            .catch(e => Alert.alert("Alert!!", e.response.data.message))
     }
 
     useEffect(() => {
@@ -41,6 +41,7 @@ const MyShifts = () => {
                 setShifts(newData)
             })
             .catch(e => {
+                Alert.alert("Alert!!", e.response.data.message)
                 let newData = data.map(item => {
                     if (item.id == id) {
                         let newItem = item
@@ -69,11 +70,12 @@ const MyShifts = () => {
                 </View>
                 <View>
                     <TouchableOpacity
-                        style={[styles.cancelButton, { borderColor: disabled ? '#A4B8D3' : '#E2006A' }]}
+                        style={[styles.cancelButton, { borderColor: item.booked == "loading" ? "#16A64D" : disabled ? '#A4B8D3' : '#E2006A' }]}
                         onPress={() => { onPressCancelShift(item.id) }}
                         disabled={disabled}
                     >
-                        <Text style={{ color: disabled ? '#A4B8D3' : '#E2006A' }}>{'Cancel'}</Text>
+                        {item.booked == "loading" ? <ActivityIndicator style={{ alignSelf: 'center' }} size="small" color="#16A64D" /> :
+                            <Text style={{ color: disabled ? '#A4B8D3' : '#E2006A' }}>{'Cancel'}</Text>}
                     </TouchableOpacity>
                 </View>
             </View>
